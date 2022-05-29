@@ -21,6 +21,9 @@ OS_NAME = $(shell echo $(BUILD_OS) | tr '[:upper:]' '[:lower:]')
 # Build the project
 all: clean linux darwin windows upx
 
+run:
+	go run main.go
+
 linux:
 	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-linux-${GOARCH} . ;
 
