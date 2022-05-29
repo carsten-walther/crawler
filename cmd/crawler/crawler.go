@@ -13,25 +13,64 @@ import (
 
 func main() {
 
-	urlParameter := flag.String("url", "", "URL to crawl, eg. https://www.your-website.com/sitemap.xml")
-	csvParameter := flag.Bool("csv", false, "If set, write csv file.")
-	maxParameter := flag.Int("max", 0, "If set, max URL request will be done.")
-	silentParameter := flag.Bool("silent", false, "If set, there will be no output to console.")
+	var file *os.File
+
+	var url string
+	flag.StringVar(&url, "url", "", "URL to crawl, eg. https://www.your-website.com/sitemap.xml")
+
+	var output string
+	flag.StringVar(&output, "output", "", "Path to results csv file.")
+
+	var count int
+	flag.IntVar(&count, "count", 0, "Maximum count of urls to crawl.")
+
+	var verbose bool
+	flag.BoolVar(&verbose, "verbose", false, "Show verbose output.")
 
 	flag.Parse()
 
-	if *urlParameter == "" {
+	if url == "" {
 		flag.PrintDefaults()
 		os.Exit(1)
 	}
 
-	if *silentParameter != true {
-		fmt.Println("starting ...")
+	if output != "" {
+		file = createFile(output)
+		defer closeFile(file)
+		writeFile([]string{"datetime", "state", "url"}, file)
 	}
 
-	urls := make([]string, 0, 0)
-	resultIndex := getIndex(*urlParameter)
+	verboseOutput("Starting ...", verbose)
 
+	var record []string
+	urls := collectUrls(url)
+	currentCount := 0
+
+	for _, url := range urls {
+		if count <= 0 {
+			record = callUrl(url, verbose)
+			if output != "" {
+				writeFile(record, file)
+			}
+		} else {
+			if currentCount < count {
+				record = callUrl(url, verbose)
+				if output != "" {
+					writeFile(record, file)
+				}
+			}
+		}
+		currentCount++
+	}
+
+	verboseOutput("Done ...", verbose)
+}
+
+/* network functions */
+
+func collectUrls(source string) []string {
+	var urls []string
+	resultIndex := getIndex(source)
 	if len(resultIndex) > 0 {
 		for _, index := range resultIndex {
 			resultEndpoints := getEndpoint(index)
@@ -42,101 +81,85 @@ func main() {
 			}
 		}
 	} else {
-		resultEndpoints := getEndpoint(*urlParameter)
+		resultEndpoints := getEndpoint(source)
 		if len(resultEndpoints) > 0 {
 			for _, url := range resultEndpoints {
 				urls = append(urls, url)
 			}
 		}
 	}
-
-	records := [][]string{
-		{"timestamp", "state", "url"},
-		{time.Now().Format(time.UnixDate), "200", *urlParameter},
-	}
-
-	count := 0
-
-	for _, url := range urls {
-		if *maxParameter <= 0 {
-			records = append(records, callUrl(url, *silentParameter))
-		} else {
-			if count < *maxParameter {
-				records = append(records, callUrl(url, *silentParameter))
-			}
-		}
-		count++
-	}
-
-	if *csvParameter == true {
-		writeCsv(records)
-	}
-
-	if *silentParameter != true {
-		fmt.Println("done ...")
-	}
+	return urls
 }
 
 func getIndex(url string) []string {
-
-	result := make([]string, 0, 0)
-
+	var result []string
 	err := sitemap.ParseIndexFromSite(url, func(entry sitemap.IndexEntry) error {
 		result = append(result, entry.GetLocation())
 		return nil
 	})
-
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
-
 	return result
 }
 
 func getEndpoint(url string) []string {
-
-	result := make([]string, 0, 0)
-
+	var result []string
 	err := sitemap.ParseFromSite(url, func(entry sitemap.Entry) error {
 		result = append(result, entry.GetLocation())
 		return nil
 	})
-
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
-
 	return result
 }
 
-func callUrl(url string, silent bool) []string {
-
+func callUrl(url string, verbose bool) []string {
 	response, err := http.Get(url)
-
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
-
-	if silent == false {
-		fmt.Println(fmt.Sprintf("%s, %v, %s", time.Now().Format(time.UnixDate), response.StatusCode, url))
-	}
-
+	verboseOutput(fmt.Sprintf("%v : %s", response.StatusCode, url), verbose)
 	return []string{time.Now().Format(time.UnixDate), fmt.Sprintf("%v", response.StatusCode), url}
 }
 
-func writeCsv(records [][]string) {
+/* verbose functions */
 
-	f, err := os.Create("results.csv")
-	defer f.Close()
-
-	if err != nil {
-		panic(err)
+func verboseOutput(message string, verbose bool) {
+	if verbose == true {
+		fmt.Println(fmt.Sprintf("# %s : %s", time.Now().Format(time.UnixDate), message))
 	}
+}
 
-	w := csv.NewWriter(f)
-	err = w.WriteAll(records)
+/* file functions */
 
+func createFile(p string) *os.File {
+	f, err := os.Create(p)
 	if err != nil {
-		panic(err)
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+	return f
+}
+
+func writeFile(record []string, f *os.File) {
+	w := csv.NewWriter(f)
+	err := w.Write(record)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+	w.Flush()
+}
+
+func closeFile(f *os.File) {
+	err := f.Close()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
 	}
 }
