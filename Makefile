@@ -22,16 +22,16 @@ OS_NAME = $(shell echo $(BUILD_OS) | tr '[:upper:]' '[:lower:]')
 all: clean linux darwin windows upx
 
 run:
-	go run main.go
+	go run cmd/crawler/crawler.go
 
 linux:
-	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-linux-${GOARCH} . ;
+	GOOS=linux GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-linux-${GOARCH} cmd/crawler/crawler.go ;
 
 darwin:
-	GOOS=darwin GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-darwin-${GOARCH} . ;
+	GOOS=darwin GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-darwin-${GOARCH} cmd/crawler/crawler.go ;
 
 windows:
-	GOOS=windows GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-windows-${GOARCH}.exe . ;
+	GOOS=windows GOARCH=${GOARCH} go build ${LDFLAGS} -o ${BUILD_DIR}/${BINARY}-windows-${GOARCH}.exe cmd/crawler/crawler.go ;
 
 upx:
 	cd ${BUILD_DIR}; \
