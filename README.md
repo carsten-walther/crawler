@@ -18,11 +18,15 @@ Once you build the binaries. Copy the desired binary depending on your operating
 
 Crawler uses 4 parameters:
 
-- url : the URL to your sitemap.xml (string)
-- max : max URL to crawl (int)
-- csv : write results to csv file (bool)
-- silent: run silently (bool)
+| Parameter | Type | Description | Default |
+|:---|:---|:---|:---|
+| url | string | the URL to your sitemap.xml |  |
+| output | string | write results to a csv file |  |
+| count | int | max count of URLs to crawl | 0 |
+| verbose | bool | show verbose output | false |
+
+Run example:
 
 ```bash
-$ crawler -url https://www.your-website.com/sitemap.xml -max 100 -csv -silent
+$ crawler -url https://www.your-website.com/sitemap.xml -count 100 -output results.csv -verbose
 ```
