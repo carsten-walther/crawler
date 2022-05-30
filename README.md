@@ -22,7 +22,7 @@ Crawler uses 4 parameters:
 |:---|:---|:---|:---|
 | url | string | the URL to your sitemap.xml |  |
 | output | string | write results to a csv file |  |
-| count | int | max count of URLs to crawl | 0 |
+| count | int | max count of URLs to crawl | 0, means disabled |
 | verbose | bool | show verbose output | false |
 
 Run example:
