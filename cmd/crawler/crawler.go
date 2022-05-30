@@ -8,9 +8,9 @@ import (
 	"os"
 	"time"
 
-	"github.com/TwiN/go-color"
-
+	color "github.com/TwiN/go-color"
 	sitemap "github.com/oxffaa/gopher-parse-sitemap"
+	terminal "golang.org/x/term"
 )
 
 var url string
@@ -22,6 +22,13 @@ func main() {
 
 	var file *os.File
 
+	width, _, err := terminal.GetSize(0)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: %v\n", err)
+		os.Exit(1)
+	}
+
 	flag.StringVar(&url, "url", "", "URL to crawl, eg. https://www.your-website.com/sitemap.xml")
 	flag.StringVar(&output, "output", "", "Path to results csv file.")
 	flag.IntVar(&count, "count", 0, "Maximum count of urls to crawl.")
@@ -29,10 +36,17 @@ func main() {
 
 	flag.Parse()
 
+	fmt.Printf("\nSimple CLI crawler\n")
+	fmt.Printf("\n%s\n", PrintLine("=", width*2/3))
+
 	if url == "" {
+		fmt.Printf("\nUsage:\n")
 		flag.PrintDefaults()
-		os.Exit(1)
+		fmt.Printf("\n")
+		os.Exit(0)
 	}
+
+	fmt.Printf("\n")
 
 	if output != "" {
 		file = createFile(output)
@@ -182,6 +196,14 @@ func recursionCountDigits(number int) int {
 func lpad(s string, pad string, plength int) string {
 	for i := len(s); i < plength; i++ {
 		s = pad + s
+	}
+	return s
+}
+
+func PrintLine(char string, chars int) string {
+	s := ""
+	for i := 0; i < chars; i++ {
+		s = char + s
 	}
 	return s
 }
