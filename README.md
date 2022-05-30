@@ -28,5 +28,9 @@ Crawler uses 4 parameters:
 Run example:
 
 ```bash
-$ crawler -url https://www.your-website.com/sitemap.xml -count 100 -output results.csv -verbose
+$ crawler -url https://www.carstenwalther.de/sitemap.xml -count 100 -output results.csv -verbose
 ```
+
+Console output:
+
+![Console](assets/console.png)
