@@ -51,14 +51,16 @@ func main() {
 	if output != "" {
 		file = createFile(output)
 		defer closeFile(file)
-		writeFile([]string{"id", "datetime", "state", "url"}, file)
+		writeFile([]string{"id", "datetime", "state", "duration", "url"}, file)
 	}
 
-	verboseOutput("> Fetching URLs ...")
+	verboseOutput("> Fetching urls ...")
+
+	start := time.Now()
 
 	urls := collectUrls(url)
 
-	verboseOutput(fmt.Sprintf("> %v URLs found ...\n", len(urls)))
+	verboseOutput(fmt.Sprintf("> %v urls found ...\n", len(urls)))
 
 	currentCount := 0
 
@@ -79,7 +81,10 @@ func main() {
 		}
 	}
 
-	verboseOutput("\n> Done ...")
+	elapsed := time.Since(start)
+
+	verboseOutput(fmt.Sprintf("\n> It took %v to fetch %v of %v urls", elapsed, count, len(urls)))
+	verboseOutput("> Done ...")
 }
 
 /* network functions */
@@ -124,13 +129,18 @@ func getEndpoint(url string) []string {
 }
 
 func callUrl(count int, url string, index int) []string {
+	start := time.Now()
+
 	response, err := http.Get(url)
+
+	elapsed := time.Since(start)
+
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "error: %v\n", err)
 		os.Exit(1)
 	}
 
-	message := fmt.Sprintf("%s, %s, %v, %s", lpad(fmt.Sprint(count), " ", recursionCountDigits(index)), time.Now().Format(time.UnixDate), response.StatusCode, url)
+	message := fmt.Sprintf("%s, %s, %v, %v, %s", lpad(fmt.Sprint(count), " ", recursionCountDigits(index)), time.Now().Format(time.UnixDate), response.StatusCode, fmt.Sprintf("%v", elapsed), url)
 
 	switch response.StatusCode {
 	case 200:
@@ -143,7 +153,7 @@ func callUrl(count int, url string, index int) []string {
 		verboseOutput(message)
 	}
 
-	return []string{fmt.Sprintf("%v", count), time.Now().Format(time.UnixDate), fmt.Sprintf("%v", response.StatusCode), url}
+	return []string{fmt.Sprintf("%v", count), time.Now().Format(time.UnixDate), fmt.Sprintf("%v", response.StatusCode), fmt.Sprintf("%v", elapsed), url}
 }
 
 /* verbose functions */
