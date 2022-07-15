@@ -131,7 +131,7 @@ func getEndpoint(url string) []string {
 func callUrl(count int, url string, index int) []string {
 	start := time.Now()
 
-	response, err := http.Get(url)
+	request, err := http.Get(url)
 
 	elapsed := time.Since(start)
 
@@ -142,7 +142,7 @@ func callUrl(count int, url string, index int) []string {
 
 	message := fmt.Sprintf("%s, %s, %v, %v, %s", lpad(fmt.Sprint(count), " ", recursionCountDigits(index)), time.Now().Format(time.UnixDate), request.StatusCode, fmt.Sprintf("%v", elapsed), url)
 
-	switch response.StatusCode {
+	switch request.StatusCode {
 	case 200:
 		verboseOutput(color.Colorize(color.Green, message))
 	case 301:
@@ -158,7 +158,7 @@ func callUrl(count int, url string, index int) []string {
 		verboseOutput(message)
 	}
 
-	return []string{fmt.Sprintf("%v", count), time.Now().Format(time.UnixDate), fmt.Sprintf("%v", response.StatusCode), fmt.Sprintf("%v", elapsed), url}
+	return []string{fmt.Sprintf("%v", count), time.Now().Format(time.UnixDate), fmt.Sprintf("%v", request.StatusCode), fmt.Sprintf("%v", elapsed), url}
 }
 
 /* verbose functions */
