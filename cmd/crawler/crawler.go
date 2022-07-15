@@ -140,15 +140,20 @@ func callUrl(count int, url string, index int) []string {
 		os.Exit(1)
 	}
 
-	message := fmt.Sprintf("%s, %s, %v, %v, %s", lpad(fmt.Sprint(count), " ", recursionCountDigits(index)), time.Now().Format(time.UnixDate), response.StatusCode, fmt.Sprintf("%v", elapsed), url)
+	message := fmt.Sprintf("%s, %s, %v, %v, %s", lpad(fmt.Sprint(count), " ", recursionCountDigits(index)), time.Now().Format(time.UnixDate), request.StatusCode, fmt.Sprintf("%v", elapsed), url)
 
 	switch response.StatusCode {
 	case 200:
 		verboseOutput(color.Colorize(color.Green, message))
+	case 301:
+	case 302:
+	case 303:
+	case 307:
+		verboseOutput(color.Colorize(color.Yellow, message))
 	case 404:
 		verboseOutput(color.Colorize(color.Red, message))
 	case 500:
-		verboseOutput(color.Colorize(color.Red, message))
+		verboseOutput(color.Colorize(color.Purple, message))
 	default:
 		verboseOutput(message)
 	}
