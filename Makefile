@@ -19,7 +19,7 @@ LDFLAGS = -ldflags "-s -w -X main.VERSION=${VERSION} -X main.COMMIT=${COMMIT} -X
 OS_NAME = $(shell echo $(BUILD_OS) | tr '[:upper:]' '[:lower:]')
 
 # Build the project
-all: clean linux freebsd darwin windows upx
+all: linux freebsd darwin windows upx
 
 run:
 	go run cmd/crawler/crawler.go
