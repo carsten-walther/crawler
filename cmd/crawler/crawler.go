@@ -158,6 +158,8 @@ func callUrl(count int, url string, index int) []string {
 		verboseOutput(message)
 	}
 
+	request.Body.Close()
+
 	return []string{fmt.Sprintf("%v", count), time.Now().Format(time.UnixDate), fmt.Sprintf("%v", request.StatusCode), fmt.Sprintf("%v", elapsed), url}
 }
 
